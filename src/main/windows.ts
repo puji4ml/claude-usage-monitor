@@ -18,10 +18,10 @@ export function createPanelWindow(): BrowserWindow {
     show: false,
     frame: false,
     resizable: false,
-    skipTaskbar: true,
+    skipTaskbar: false,
+    alwaysOnTop: true,
     webPreferences: { preload, contextIsolation: true }
   })
-  win.on('blur', () => win.hide())
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }

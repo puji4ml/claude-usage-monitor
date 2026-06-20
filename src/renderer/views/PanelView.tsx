@@ -14,11 +14,14 @@ export function PanelView() {
   useEffect(() => {
     api.getState().then(setState)
     api.getSettings().then(setSettings)
+    // Seed from the 7-day history persisted by the main process so the chart
+    // survives panel hide/show remounts instead of starting empty each time.
+    api.getHistory().then(setHistory)
     return api.onState((s) => {
       setState(s)
       if (s.snapshot) {
         const snap = s.snapshot
-        setHistory((h) => [...h, snap].slice(-100))
+        setHistory((h) => [...h, snap].slice(-500))
       }
     })
   }, [])

@@ -32,7 +32,14 @@ export function openLoginWindow(): Promise<void> {
       width: 480,
       height: 720,
       title: 'Sign in to Claude',
-      webPreferences: { partition: PARTITION }
+      webPreferences: { partition: PARTITION, contextIsolation: true, nodeIntegration: false }
+    })
+    // The login window holds the real claude.ai session partition. Keep it
+    // locked to claude.ai: deny popups and block off-origin navigation so the
+    // session cookies cannot be carried to an arbitrary origin.
+    win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+    win.webContents.on('will-navigate', (e, url) => {
+      if (!url.startsWith(ORIGIN + '/')) e.preventDefault()
     })
     win.loadURL(ORIGIN + '/login')
     const check = setInterval(async () => {

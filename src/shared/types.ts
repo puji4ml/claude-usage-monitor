@@ -31,6 +31,7 @@ export const IPC = {
   getState: 'usage:getState',
   onState: 'usage:onState',
   refresh: 'usage:refresh',
+  getHistory: 'usage:getHistory',
   getSettings: 'settings:get',
   setSettings: 'settings:set',
   openLogin: 'auth:openLogin'

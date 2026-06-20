@@ -1,4 +1,4 @@
-import { app, safeStorage } from 'electron'
+import { app } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import type { Settings } from '@shared/types'
@@ -11,6 +11,10 @@ export const DEFAULT_SETTINGS: Settings = {
   showWidget: false
 }
 
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n))
+}
+
 export function mergeSettings(partial: Partial<Settings>): Settings {
   const merged: Settings = {
     ...DEFAULT_SETTINGS,
@@ -18,14 +22,13 @@ export function mergeSettings(partial: Partial<Settings>): Settings {
     thresholds: { ...DEFAULT_SETTINGS.thresholds, ...(partial.thresholds ?? {}) }
   }
   merged.refreshMinutes = Math.max(1, Math.floor(merged.refreshMinutes))
+  merged.thresholds.amber = clamp(merged.thresholds.amber, 0, 100)
+  merged.thresholds.red = clamp(merged.thresholds.red, merged.thresholds.amber, 100)
   return merged
 }
 
 function settingsFile(): string {
   return join(app.getPath('userData'), 'settings.json')
-}
-function sessionFile(): string {
-  return join(app.getPath('userData'), 'session.bin')
 }
 
 export async function loadSettings(): Promise<Settings> {
@@ -38,22 +41,4 @@ export async function loadSettings(): Promise<Settings> {
 
 export async function saveSettings(s: Settings): Promise<void> {
   await fs.writeFile(settingsFile(), JSON.stringify(mergeSettings(s)), 'utf8')
-}
-
-export async function saveSession(token: string): Promise<void> {
-  const buf = safeStorage.isEncryptionAvailable()
-    ? safeStorage.encryptString(token)
-    : Buffer.from(token, 'utf8')
-  await fs.writeFile(sessionFile(), buf)
-}
-
-export async function loadSession(): Promise<string | null> {
-  try {
-    const buf = await fs.readFile(sessionFile())
-    return safeStorage.isEncryptionAvailable()
-      ? safeStorage.decryptString(buf)
-      : buf.toString('utf8')
-  } catch {
-    return null
-  }
 }

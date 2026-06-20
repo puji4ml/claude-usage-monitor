@@ -5,13 +5,19 @@ import { loadSettings } from './settings/store'
 import type { UsageState, UsageSnapshot } from '@shared/types'
 
 let lastSnapshot: UsageSnapshot | null = null
+let lastState: UsageState = { status: 'ok', snapshot: null }
 let notifyState: NotifyState = { session: 'none', weekly: 'none' }
+let refreshing = false
 
-export function currentSnapshot(): UsageSnapshot | null {
-  return lastSnapshot
+export function currentState(): UsageState {
+  return lastState
 }
 
 export async function runRefresh(): Promise<UsageState> {
+  // Guard against overlapping refreshes (scheduler tick + manual click) that
+  // could double-fire threshold alerts.
+  if (refreshing) return lastState
+  refreshing = true
   try {
     const snap = await fetchUsage()
     lastSnapshot = snap
@@ -20,15 +26,19 @@ export async function runRefresh(): Promise<UsageState> {
     const { alerts, next } = evaluateThresholds(snap, settings.thresholds, notifyState)
     notifyState = next
     fireAlerts(alerts)
-    return { status: 'ok', snapshot: snap }
+    lastState = { status: 'ok', snapshot: snap }
   } catch (err) {
     if (err instanceof NotAuthenticatedError) {
-      return { status: 'relogin', snapshot: lastSnapshot, message: err.message }
+      lastState = { status: 'relogin', snapshot: lastSnapshot, message: err.message }
+    } else {
+      lastState = {
+        status: lastSnapshot ? 'stale' : 'error',
+        snapshot: lastSnapshot,
+        message: (err as Error).message
+      }
     }
-    return {
-      status: lastSnapshot ? 'stale' : 'error',
-      snapshot: lastSnapshot,
-      message: (err as Error).message
-    }
+  } finally {
+    refreshing = false
   }
+  return lastState
 }

@@ -1,8 +1,9 @@
-import type { UsageState, Settings } from '@shared/types'
+import type { UsageState, UsageSnapshot, Settings } from '@shared/types'
 
 interface Api {
   getState(): Promise<UsageState>
   refresh(): Promise<void>
+  getHistory(): Promise<UsageSnapshot[]>
   getSettings(): Promise<Settings>
   setSettings(s: Settings): Promise<void>
   openLogin(): Promise<void>

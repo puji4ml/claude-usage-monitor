@@ -1,0 +1,14 @@
+appId: com.pujan.claude-usage-monitor
+productName: Claude Usage Monitor
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - out/**/*
+  - package.json
+win:
+  target:
+    - target: nsis
+nsis:
+  oneClick: true
+  perMachine: false

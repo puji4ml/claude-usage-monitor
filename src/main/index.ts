@@ -1,11 +1,33 @@
 import { app, BrowserWindow } from 'electron'
+import { createPanelWindow, createWidgetWindow } from './windows'
+import { createTray } from './tray'
+import { registerIpc } from './ipc'
+import { startScheduler } from './scheduler'
+import { loadSettings } from './settings/store'
+import { isLoggedIn, openLoginWindow } from './auth/session'
 
-app.whenReady().then(() => {
-  const win = new BrowserWindow({ width: 360, height: 480 })
-  if (process.env.ELECTRON_RENDERER_URL) win.loadURL(process.env.ELECTRON_RENDERER_URL)
-  else win.loadFile('out/renderer/index.html')
+let panel: BrowserWindow
+let widget: BrowserWindow | null = null
+
+app.whenReady().then(async () => {
+  panel = createPanelWindow()
+  const settings = await loadSettings()
+  if (settings.showWidget) widget = createWidgetWindow()
+
+  const windows = (): BrowserWindow[] =>
+    [panel, widget].filter(Boolean) as BrowserWindow[]
+  const { doRefresh } = registerIpc(windows)
+  createTray(
+    panel,
+    () => void doRefresh(),
+    () => app.quit()
+  )
+
+  if (!(await isLoggedIn())) await openLoginWindow()
+  await doRefresh()
+  startScheduler(settings.refreshMinutes, () => void doRefresh())
 })
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
-})
+// Tray app: deliberately do not quit when all windows are hidden/closed.
+// Quit happens only via the tray menu (app.quit()).
+app.on('window-all-closed', () => {})

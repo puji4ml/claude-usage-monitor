@@ -11,22 +11,22 @@ function load(win: BrowserWindow, hash: string): void {
   }
 }
 
-const glass =
-  process.platform === 'win32'
-    ? { backgroundMaterial: 'acrylic' as const, backgroundColor: '#00000000' }
-    : { vibrancy: 'under-window' as const, transparent: true, backgroundColor: '#00000000' }
-
+// Transparent floating window: the rounded glass card is drawn in CSS, so the
+// corners reveal the desktop. This works regardless of the Windows 11
+// "transparency effects" setting (unlike acrylic/mica, which render flat gray
+// when that setting is off).
 export function createPanelWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 360,
     height: 430,
     show: false,
     frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    hasShadow: false,
     resizable: false,
     skipTaskbar: false,
-    alwaysOnTop: true,
-    roundedCorners: true,
-    ...glass,
+    alwaysOnTop: false,
     webPreferences: { preload, contextIsolation: true }
   })
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -41,12 +41,14 @@ export function createWidgetWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 230,
     height: 150,
+    show: true,
     frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    hasShadow: false,
     alwaysOnTop: true,
     resizable: false,
     skipTaskbar: true,
-    roundedCorners: true,
-    ...glass,
     webPreferences: { preload, contextIsolation: true }
   })
   load(win, 'widget')

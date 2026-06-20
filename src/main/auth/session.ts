@@ -27,18 +27,21 @@ export async function isLoggedIn(): Promise<boolean> {
 export function openLoginWindow(): Promise<void> {
   return new Promise((resolve) => {
     const win = new BrowserWindow({
-      width: 480,
-      height: 780,
+      width: 520,
+      height: 740,
       title: 'Sign in to Claude',
       autoHideMenuBar: true,
+      center: true,
+      show: true,
+      alwaysOnTop: true,
       webPreferences: { partition: PARTITION, contextIsolation: true, nodeIntegration: false }
     })
-    // This is a real sign-in browser for claude.ai, which delegates to
-    // third-party identity providers (Google, Apple, etc). Allow OAuth popups
-    // and cross-origin navigation here so login can complete. The data-display
-    // windows (panel/widget) keep their strict navigation/popup guards.
+    // Real sign-in browser: claude.ai delegates to third-party identity
+    // providers (Google/Apple), so allow OAuth popups and cross-origin nav.
     win.webContents.setWindowOpenHandler(() => ({ action: 'allow' }))
+    win.setAlwaysOnTop(true, 'screen-saver')
     win.loadURL(ORIGIN + '/login')
+    win.focus()
     const check = setInterval(async () => {
       if (await isLoggedIn()) {
         clearInterval(check)

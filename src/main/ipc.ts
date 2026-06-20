@@ -13,8 +13,13 @@ export function registerIpc(getWindows: () => BrowserWindow[]): {
   broadcast: Broadcast
   doRefresh: () => Promise<void>
 } {
-  const broadcast: Broadcast = (state) =>
-    getWindows().forEach((w) => w.webContents.send(IPC.onState, state))
+  const broadcast: Broadcast = (state) => {
+    for (const w of getWindows()) {
+      if (!w.isDestroyed() && !w.webContents.isDestroyed()) {
+        w.webContents.send(IPC.onState, state)
+      }
+    }
+  }
   const doRefresh = async (): Promise<void> => {
     broadcast(await runRefresh())
   }
@@ -26,7 +31,6 @@ export function registerIpc(getWindows: () => BrowserWindow[]): {
   ipcMain.handle(IPC.setSettings, async (_e, s) => {
     await saveSettings(s)
     const fresh = await loadSettings()
-    // Re-arm the scheduler so a changed refresh interval takes effect now.
     stopScheduler()
     startScheduler(fresh.refreshMinutes, () => void doRefresh())
   })

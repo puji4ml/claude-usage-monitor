@@ -15,8 +15,6 @@ export async function getSessionCookie(): Promise<string | null> {
 }
 
 export async function getOrgId(): Promise<string | null> {
-  // Org id is exposed in a cookie on claude.ai. Confirm the real cookie name
-  // during the Task 1 capture and correct it here if needed.
   const cookies = await claudeSession().cookies.get({ url: ORIGIN })
   const org = cookies.find((c) => c.name === 'lastActiveOrg')
   return org?.value ?? null
@@ -30,22 +28,21 @@ export function openLoginWindow(): Promise<void> {
   return new Promise((resolve) => {
     const win = new BrowserWindow({
       width: 480,
-      height: 720,
+      height: 780,
       title: 'Sign in to Claude',
+      autoHideMenuBar: true,
       webPreferences: { partition: PARTITION, contextIsolation: true, nodeIntegration: false }
     })
-    // The login window holds the real claude.ai session partition. Keep it
-    // locked to claude.ai: deny popups and block off-origin navigation so the
-    // session cookies cannot be carried to an arbitrary origin.
-    win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
-    win.webContents.on('will-navigate', (e, url) => {
-      if (!url.startsWith(ORIGIN + '/')) e.preventDefault()
-    })
+    // This is a real sign-in browser for claude.ai, which delegates to
+    // third-party identity providers (Google, Apple, etc). Allow OAuth popups
+    // and cross-origin navigation here so login can complete. The data-display
+    // windows (panel/widget) keep their strict navigation/popup guards.
+    win.webContents.setWindowOpenHandler(() => ({ action: 'allow' }))
     win.loadURL(ORIGIN + '/login')
     const check = setInterval(async () => {
       if (await isLoggedIn()) {
         clearInterval(check)
-        win.close()
+        if (!win.isDestroyed()) win.close()
       }
     }, 1500)
     win.on('closed', () => {

@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'tnum';
+    @apply bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
+  }
+}

@@ -1,14 +1,31 @@
 import { resolve } from 'path'
-import { defineConfig } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+
+const ext = ['electron', 'electron/main', 'electron/common', 'electron/renderer']
+const cjsOut = { format: 'cjs' as const, entryFileNames: '[name].js' }
 
 export default defineConfig({
   main: {
-    build: { rollupOptions: { input: { index: resolve(__dirname, 'src/main/index.ts') } } },
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        external: ext,
+        input: { index: resolve(__dirname, 'src/main/index.ts') },
+        output: cjsOut
+      }
+    },
     resolve: { alias: { '@shared': resolve(__dirname, 'src/shared') } }
   },
   preload: {
-    build: { rollupOptions: { input: { index: resolve(__dirname, 'src/preload/index.ts') } } }
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        external: ext,
+        input: { index: resolve(__dirname, 'src/preload/index.ts') },
+        output: cjsOut
+      }
+    }
   },
   renderer: {
     root: resolve(__dirname, 'src/renderer'),

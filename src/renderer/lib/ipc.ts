@@ -7,6 +7,8 @@ interface Api {
   getSettings(): Promise<Settings>
   setSettings(s: Settings): Promise<void>
   openLogin(): Promise<void>
+  setWindowSize(width: number, height: number): Promise<void>
+  resetWindow(): Promise<void>
   onState(cb: (s: UsageState) => void): () => void
 }
 

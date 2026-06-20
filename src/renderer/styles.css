@@ -25,3 +25,34 @@
     height: 0;
   }
 }
+
+@layer components {
+  /* Drag the frameless window by its header; interactive controls opt out. */
+  .app-drag {
+    -webkit-app-region: drag;
+  }
+  .app-no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  /* Custom resize handle in the bottom-right corner (transparent frameless
+     windows resize poorly from OS edges, so the renderer drives it via IPC). */
+  .resize-grip {
+    position: fixed;
+    right: 3px;
+    bottom: 3px;
+    width: 16px;
+    height: 16px;
+    z-index: 50;
+    cursor: nwse-resize;
+    -webkit-app-region: no-drag;
+    border-right: 2px solid rgba(255, 255, 255, 0.28);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.28);
+    border-bottom-right-radius: 8px;
+    transition: border-color 0.15s ease;
+  }
+  .resize-grip:hover {
+    border-right-color: rgba(255, 255, 255, 0.6);
+    border-bottom-color: rgba(255, 255, 255, 0.6);
+  }
+}

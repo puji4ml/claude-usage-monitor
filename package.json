@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "dist": "electron-vite build && electron-builder"
   },
-  "dependencies": {
+  "devDependencies": {
     "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

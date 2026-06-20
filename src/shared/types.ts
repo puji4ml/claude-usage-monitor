@@ -36,5 +36,7 @@ export const IPC = {
   getHistory: 'usage:getHistory',
   getSettings: 'settings:get',
   setSettings: 'settings:set',
-  openLogin: 'auth:openLogin'
+  openLogin: 'auth:openLogin',
+  setWindowSize: 'window:setSize',
+  resetWindow: 'window:reset'
 } as const

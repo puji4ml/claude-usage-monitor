@@ -4,3 +4,7 @@ out/
 *.log
 .env
 .claude/settings.local.json
+about-me/
+devrun.log
+.DS_Store
+Thumbs.db

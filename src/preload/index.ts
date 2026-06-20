@@ -9,6 +9,9 @@ contextBridge.exposeInMainWorld('api', {
   getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.getSettings),
   setSettings: (s: Settings): Promise<void> => ipcRenderer.invoke(IPC.setSettings, s),
   openLogin: (): Promise<void> => ipcRenderer.invoke(IPC.openLogin),
+  setWindowSize: (width: number, height: number): Promise<void> =>
+    ipcRenderer.invoke(IPC.setWindowSize, width, height),
+  resetWindow: (): Promise<void> => ipcRenderer.invoke(IPC.resetWindow),
   onState: (cb: (s: UsageState) => void) => {
     const handler = (_e: unknown, s: UsageState) => cb(s)
     ipcRenderer.on(IPC.onState, handler)

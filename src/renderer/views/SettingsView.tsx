@@ -18,10 +18,10 @@ export function SettingsView({ onBack }: { onBack: () => void }) {
   if (!s) return <div className="flex h-full items-center justify-center text-sm text-zinc-400">Loading…</div>
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center gap-2 px-4 pb-3 pt-4">
+      <header className="app-drag flex items-center gap-2 px-4 pb-3 pt-4">
         <button
           onClick={onBack}
-          className="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+          className="app-no-drag rounded-lg p-1 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -56,14 +56,33 @@ export function SettingsView({ onBack }: { onBack: () => void }) {
             onChange={(e) => save({ ...s, thresholds: { ...s.thresholds, red: Number(e.target.value) } })}
           />
         </label>
-        <label className="flex items-center justify-between">
-          Floating widget
-          <input
-            type="checkbox"
-            checked={s.showWidget}
-            onChange={(e) => save({ ...s, showWidget: e.target.checked })}
-          />
-        </label>
+        <div className="app-no-drag flex flex-col gap-1">
+          <label className="flex items-center justify-between">
+            Floating widget
+            <input
+              type="checkbox"
+              checked={s.showWidget}
+              onChange={(e) => save({ ...s, showWidget: e.target.checked })}
+            />
+          </label>
+          <p className="text-xs leading-snug text-zinc-500">
+            Keeps a small always-on-top window pinned over other apps so your usage stays visible.
+            Turn it off to use only the tray popover.
+          </p>
+        </div>
+
+        <div className="app-no-drag mt-1 flex flex-col gap-1 border-t border-white/10 pt-3">
+          <button
+            onClick={() => api.resetWindow()}
+            className="self-start rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-200 transition-colors hover:bg-white/10"
+          >
+            Reset window position &amp; size
+          </button>
+          <p className="text-xs leading-snug text-zinc-500">
+            Drag a window by its title bar to move it, and drag the bottom-right corner to resize.
+            Use this if a window ends up off-screen.
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -34,12 +34,12 @@ export function PanelView({ onSettings }: { onSettings: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between px-5 pb-3 pt-4">
+      <header className="app-drag flex items-center justify-between px-5 pb-3 pt-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold tracking-tight text-white">Claude Usage</span>
           {state.status === 'stale' && <StaleBadge />}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="app-no-drag flex items-center gap-1">
           <button
             onClick={() => api.refresh()}
             title="Refresh"

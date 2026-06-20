@@ -4,17 +4,24 @@
 
 @layer base {
   :root {
-    color-scheme: light dark;
+    color-scheme: dark;
   }
   html,
   body,
   #root {
     height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: transparent;
   }
   body {
-    margin: 0;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: 'tnum';
-    @apply bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
+    user-select: none;
+    cursor: default;
+  }
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
   }
 }

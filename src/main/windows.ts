@@ -11,15 +11,22 @@ function load(win: BrowserWindow, hash: string): void {
   }
 }
 
+const glass =
+  process.platform === 'win32'
+    ? { backgroundMaterial: 'acrylic' as const, backgroundColor: '#00000000' }
+    : { vibrancy: 'under-window' as const, transparent: true, backgroundColor: '#00000000' }
+
 export function createPanelWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 340,
-    height: 460,
+    width: 360,
+    height: 430,
     show: false,
     frame: false,
     resizable: false,
     skipTaskbar: false,
     alwaysOnTop: true,
+    roundedCorners: true,
+    ...glass,
     webPreferences: { preload, contextIsolation: true }
   })
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -32,12 +39,14 @@ export function createPanelWindow(): BrowserWindow {
 
 export function createWidgetWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 220,
-    height: 140,
+    width: 230,
+    height: 150,
     frame: false,
     alwaysOnTop: true,
     resizable: false,
     skipTaskbar: true,
+    roundedCorners: true,
+    ...glass,
     webPreferences: { preload, contextIsolation: true }
   })
   load(win, 'widget')

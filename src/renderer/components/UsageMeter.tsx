@@ -1,10 +1,12 @@
 import type { UsageMetric } from '@shared/types'
-import { pct, countdown } from '../lib/format'
+import { pct, resetLabel } from '../lib/format'
 
-function color(p: number, amber: number, red: number): string {
-  if (p >= red) return 'text-rose-500'
-  if (p >= amber) return 'text-amber-500'
-  return 'text-emerald-500'
+type Tone = { ring: string; glow: string; text: string }
+
+function tone(p: number, amber: number, red: number): Tone {
+  if (p >= red) return { ring: '#fb7185', glow: 'rgba(251,113,133,0.55)', text: 'text-rose-300' }
+  if (p >= amber) return { ring: '#fbbf24', glow: 'rgba(251,191,36,0.5)', text: 'text-amber-300' }
+  return { ring: '#34d399', glow: 'rgba(52,211,153,0.45)', text: 'text-emerald-300' }
 }
 
 export function UsageMeter({
@@ -18,37 +20,32 @@ export function UsageMeter({
   amber: number
   red: number
 }) {
-  const c = color(m.usedPct, amber, red)
-  const r = 28
+  const t = tone(m.usedPct, amber, red)
+  const r = 26
   const circ = 2 * Math.PI * r
-  const dash = circ * Math.min(1, m.usedPct / 100)
+  const dash = circ * Math.min(1, Math.max(0, m.usedPct / 100))
+
   return (
-    <div className="flex items-center gap-3">
-      <svg width="72" height="72" viewBox="0 0 72 72" className={c}>
+    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+      <svg width="68" height="68" viewBox="0 0 68 68" className="shrink-0">
+        <circle cx="34" cy="34" r={r} stroke="rgba(255,255,255,0.10)" strokeWidth="6" fill="none" />
         <circle
-          cx="36"
-          cy="36"
+          cx="34"
+          cy="34"
           r={r}
-          className="stroke-black/10 dark:stroke-white/10"
+          stroke={t.ring}
           strokeWidth="6"
           fill="none"
-        />
-        <circle
-          cx="36"
-          cy="36"
-          r={r}
-          strokeWidth="6"
-          fill="none"
-          stroke="currentColor"
           strokeLinecap="round"
           strokeDasharray={dash + ' ' + circ}
-          transform="rotate(-90 36 36)"
+          transform="rotate(-90 34 34)"
+          style={{ filter: 'drop-shadow(0 0 6px ' + t.glow + ')' }}
         />
       </svg>
-      <div>
-        <div className="text-xs uppercase tracking-wide opacity-60">{label}</div>
-        <div className="text-2xl font-semibold tabular-nums">{pct(m.usedPct)}</div>
-        <div className="text-xs opacity-60">resets in {countdown(m.resetsAt)}</div>
+      <div className="min-w-0">
+        <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-400">{label}</div>
+        <div className={'text-2xl font-semibold tabular-nums ' + t.text}>{pct(m.usedPct)}</div>
+        <div className="truncate text-xs text-zinc-400">resets {resetLabel(m.resetsAt)}</div>
       </div>
     </div>
   )

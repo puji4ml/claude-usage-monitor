@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { RefreshCw, Settings as SettingsIcon } from 'lucide-react'
 import type { UsageState, UsageSnapshot, Settings } from '@shared/types'
 import { api } from '../lib/ipc'
 import { UsageMeter } from '../components/UsageMeter'
@@ -6,7 +7,7 @@ import { HistoryChart } from '../components/HistoryChart'
 import { StaleBadge } from '../components/StaleBadge'
 import { ReloginPrompt } from '../components/ReloginPrompt'
 
-export function PanelView() {
+export function PanelView({ onSettings }: { onSettings: () => void }) {
   const [state, setState] = useState<UsageState | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [history, setHistory] = useState<UsageSnapshot[]>([])
@@ -14,8 +15,6 @@ export function PanelView() {
   useEffect(() => {
     api.getState().then(setState)
     api.getSettings().then(setSettings)
-    // Seed from the 7-day history persisted by the main process so the chart
-    // survives panel hide/show remounts instead of starting empty each time.
     api.getHistory().then(setHistory)
     return api.onState((s) => {
       setState(s)
@@ -26,29 +25,51 @@ export function PanelView() {
     })
   }, [])
 
-  if (!state || !settings) return <div className="p-4 text-sm">Loading…</div>
+  if (!state || !settings) {
+    return <div className="flex h-full items-center justify-center text-sm text-zinc-400">Loading…</div>
+  }
   if (state.status === 'relogin') return <ReloginPrompt />
   const snap = state.snapshot
-  if (!snap) return <div className="p-4 text-sm">No data yet.</div>
   const { amber, red } = settings.thresholds
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Claude usage</span>
+    <div className="flex h-full flex-col">
+      <header className="flex items-center justify-between px-5 pb-3 pt-4">
         <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold tracking-tight text-white">Claude Usage</span>
           {state.status === 'stale' && <StaleBadge />}
+        </div>
+        <div className="flex items-center gap-1">
           <button
-            className="text-xs opacity-60 hover:opacity-100"
             onClick={() => api.refresh()}
+            title="Refresh"
+            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
           >
-            Refresh
+            <RefreshCw className="h-4 w-4" />
+          </button>
+          <button
+            onClick={onSettings}
+            title="Settings"
+            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <SettingsIcon className="h-4 w-4" />
           </button>
         </div>
+      </header>
+      <div className="flex flex-1 flex-col gap-2.5 overflow-hidden px-5 pb-4">
+        {!snap ? (
+          <div className="flex flex-1 items-center justify-center text-sm text-zinc-400">No data yet.</div>
+        ) : (
+          <>
+            <UsageMeter label="Session" m={snap.session} amber={amber} red={red} />
+            <UsageMeter label="Weekly" m={snap.weekly} amber={amber} red={red} />
+            <div className="mt-1 px-1 text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+              Past 7 days
+            </div>
+            <HistoryChart data={history} />
+          </>
+        )}
       </div>
-      <UsageMeter label="Session" m={snap.session} amber={amber} red={red} />
-      <UsageMeter label="Weekly" m={snap.weekly} amber={amber} red={red} />
-      <HistoryChart data={history} />
     </div>
   )
 }

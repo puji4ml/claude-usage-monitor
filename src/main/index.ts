@@ -1,13 +1,15 @@
-import { app, BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow, screen, Tray } from 'electron'
 import { createPanelWindow, createWidgetWindow } from './windows'
-import { createTray } from './tray'
+import { createTray, setTrayUsage } from './tray'
 import { registerIpc } from './ipc'
 import { startScheduler } from './scheduler'
 import { loadSettings } from './settings/store'
+import { currentState } from './refresh'
 import { isLoggedIn, openLoginWindow } from './auth/session'
 
 let panel: BrowserWindow
 let widget: BrowserWindow | null = null
+let tray: Tray
 
 function showPanelTopRight(): void {
   if (!panel || panel.isDestroyed()) return
@@ -18,8 +20,6 @@ function showPanelTopRight(): void {
   panel.focus()
 }
 
-// Single instance: a second launch focuses the existing window instead of
-// stacking another tray app.
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
@@ -33,16 +33,22 @@ if (!app.requestSingleInstanceLock()) {
     const windows = (): BrowserWindow[] =>
       [panel, widget].filter(Boolean) as BrowserWindow[]
     const { doRefresh } = registerIpc(windows)
-    createTray(
-      panel,
-      () => void doRefresh(),
-      () => app.quit()
-    )
+
+    const tick = async (): Promise<void> => {
+      await doRefresh()
+      setTrayUsage(tray, currentState().snapshot)
+    }
+
+    tray = createTray({
+      onShow: showPanelTopRight,
+      onRefresh: () => void tick(),
+      onQuit: () => app.quit()
+    })
 
     if (!(await isLoggedIn())) await openLoginWindow()
-    await doRefresh()
+    await tick()
     showPanelTopRight()
-    startScheduler(settings.refreshMinutes, () => void doRefresh())
+    startScheduler(settings.refreshMinutes, () => void tick())
   })
 
   // Tray app: do not quit when windows are hidden/closed; quit via tray menu.

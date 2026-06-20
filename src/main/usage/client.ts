@@ -13,7 +13,12 @@ export async function fetchUsage(): Promise<UsageSnapshot> {
 
   const res = await net.fetch(buildUsageUrl(orgId), {
     method: USAGE_METHOD,
-    headers: { cookie, accept: 'application/json' }
+    headers: {
+      cookie,
+      accept: '*/*',
+      // claude.ai gates its internal API on this client header.
+      'anthropic-client-platform': 'web_claude_ai'
+    }
   })
   if (res.status === 401 || res.status === 403) {
     throw new NotAuthenticatedError('auth rejected (' + res.status + ')')

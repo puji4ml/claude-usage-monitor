@@ -1,13 +1,15 @@
 export interface UsageMetric {
+  /** Percent of the limit consumed (0-100), from the API "utilization" field. */
   usedPct: number
-  used: number
-  limit: number
+  /** ISO timestamp when this window resets. */
   resetsAt: string
 }
 
 export interface UsageSnapshot {
   capturedAt: string
+  /** 5-hour rolling session window (API: five_hour). */
   session: UsageMetric
+  /** 7-day all-models window (API: seven_day). */
   weekly: UsageMetric
 }
 

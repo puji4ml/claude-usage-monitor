@@ -3,7 +3,7 @@ import { appendSnapshot, pruneOlderThan } from '../../../src/main/history/store'
 import type { UsageSnapshot } from '../../../src/shared/types'
 
 function snap(capturedAt: string): UsageSnapshot {
-  const m = { usedPct: 1, used: 1, limit: 100, resetsAt: capturedAt }
+  const m = { usedPct: 1, resetsAt: capturedAt }
   return { capturedAt, session: m, weekly: m }
 }
 

@@ -5,8 +5,8 @@ import type { UsageSnapshot } from '../../../src/shared/types'
 function snap(sessionPct: number, weeklyPct: number): UsageSnapshot {
   return {
     capturedAt: '2026-06-19T12:00:00Z',
-    session: { usedPct: sessionPct, used: 0, limit: 100, resetsAt: '' },
-    weekly: { usedPct: weeklyPct, used: 0, limit: 100, resetsAt: '' }
+    session: { usedPct: sessionPct, resetsAt: '' },
+    weekly: { usedPct: weeklyPct, resetsAt: '' }
   }
 }
 const cfg = { amber: 70, red: 90 }
